@@ -1,0 +1,1 @@
+../pkg/sowasm.d.ts

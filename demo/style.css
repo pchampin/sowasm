@@ -1,0 +1,41 @@
+#idiv, #odiv {
+    display: inline-block;
+    width: 50em;
+    margin: 1em 1em 0 0;
+    vertical-align: top;
+}
+
+#input, #output {
+    width: 100%;
+    height: 25em;
+}
+
+textarea.error {
+    color: red;
+}
+
+.toolbar {
+    display: flex;
+    margin-top: 0.5em;
+}
+
+#odiv .toolbar {
+    justify-content: right;
+}
+
+#url {
+    flex-grow: 100;
+}
+
+#advancedOptions {
+    margin-top: 0.5em;
+}
+
+#examples {
+    margin-top: 0.5em;
+    padding-top: 0.5em;
+}
+
+#examples, footer {
+    border-top: thin solid lightGray;
+}

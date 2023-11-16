@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8">
+<title>SoWasm demo</title>
+<link rel="stylesheet" href="style.css">
+<script src="script.js" type="module"></script>
+
+<h1>SoWasm</h1>
+<p>An RDF playground based on the <a href="https://crates.io/crates/sophia">Sophia</a> library.</p>
+<div id="idiv">
+    <select id="iformat">
+        <option value="application/n-triples">N-Triples</option>
+        <option value="application/n-quads">N-Quads</option>
+        <option value="text/turtle">Turtle</option>
+        <option value="application/trig">TriG</option>
+        <option value="application/ld+json">JSON-LD</option>
+        <option value="application/rdf+xml">RDF/XML</option>
+    </select>
+    <label><input id="guess" type="checkbox" checked>Guess format</label>
+
+    <textarea id="input" placeholder="type or copy some RDF here"></textarea>
+
+    <div class=toolbar>
+      <label for=url>URL:</label>
+      <input id="url"> 
+      <button id="load">load</button>
+    </div>
+
+    <details id=advancedOptions>
+      <summary>Advanced options</summary>
+      <ul>
+        <li><label><input id="corsproxy" type="checkbox"> use <a href="https://corsproxy.io">corsproxy.io</a></label>
+      </ul>
+    </details>
+</div>
+<div id="odiv">
+    <select id="oformat">
+        <option value="application/n-triples">N-Triples</option>
+        <option value="application/n-quads">N-Quads</option>
+        <option value="text/turtle">Turtle</option>
+        <option value="application/trig">TriG</option>
+        <option value="application/ld+json">JSON-LD</option>
+        <option value="application/rdf+xml">RDF/XML</option>
+        <option value="application/canonical-n-quads">Canonicalize with RDFC 1.0</option>
+    </select>
+    <label><input id="auto" type="checkbox" checked>Automatic</label>
+    <button id="convert" disabled>Convert</button>
+
+    <textarea id="output" readonly placeholder="result will appear here"></textarea>
+
+    <div class=toolbar>
+        <button id="permalink">Copy permalink</button>
+    </div>
+</div>
+<div id=examples>
+A few examples:
+<ul>
+    <li><a href="?guess=&oformat=text%2Fturtle&auto=&input=%7B%0A++%22%40context%22%3A+%22https%3A%2F%2Fschema.org%2F%22%2C%0A++%22type%22%3A+%22Person%22%2C%0A++%22name%22%3A+%22Pierre-Antoine+Champin%22%2C%0A++%22url%22%3A+%22https%3A%2F%2Fchampin.net%2F%22%0A%7D">A simple JSON-LD example to Turtle</a>
+    <li><a href="?noguess=&iformat=text%2Fturtle&oformat=application%2Fcanonical-n-quads&auto=&url=https%3A%2F%2Fwww.w3.org%2FPeople%2FBerners-Lee%2Fcard.ttl">Tim Berners Lee's profile, from Turtle to Canonicalized RDF</a>
+    <li><a href="?noguess=&iformat=application%2Frdf%2Bxml&oformat=application%2Fld%2Bjson&auto=&url=https%3A%2F%2Fwww.w3.org%2FPeople%2FBerners-Lee%2Fcard.rdf">Tim Berners Lee's profile, from RDF/XML to JSON-LD</a>
+</ul>
+</div>
+<footer>
+    <p>Created by <a href="https://champin.net/">Pierre-Antoine Champin</a>
+    —
+    <a href="https://github.com/pchampin/sowasm">Code available on github</a>
+    </p>
+</footer>
