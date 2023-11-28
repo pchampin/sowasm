@@ -98,7 +98,7 @@ async function main() {
             if (corsproxyBox.checked) {
                 urlParams.set('corsproxy', '');
             }
-            const link = new URL(window.location.toString());
+            const link = baseUrl();
             link.search = urlParams.toString();
             navigator.clipboard.writeText(link.toString());
         });
@@ -204,16 +204,11 @@ async function main() {
     async function doLoad() {
         input.classList.remove('error');
         try {
-            input.value = ("loading");
+            input.value = "(loading)";
             input.disabled = true;
-            let urlStr;
-            if (corsproxyBox.checked) {
-                urlStr = "https://corsproxy.io/?" + encodeURIComponent(url.value);
-            } else {
-                urlStr = url.value;
-            }
-            const resp = await fetch(urlStr);
-            if (resp.status < 200 || resp.status > 299) {
+            output.value = "";
+            const resp = await myFetch(url.value);
+            if (Math.floor(resp.status / 100) !== 2) {
                 throw ("Got status " + resp.status);
             }
             const ctype = resp.headers.get("content-type");
@@ -233,6 +228,22 @@ async function main() {
             input.disabled = false;
         }
     }
+
+    async function myFetch(url, options) {
+        options = options || {};
+        if (!options.headers) {
+            options.headers = {};
+        }
+        if (!options.headers.accept) {
+            options.headers.accept = "application/n-triples,application/n-quads,text/turtle,application/trig,application/ld+json,application/rdf+xml";
+        }
+        if (corsproxyBox.checked) {
+            url = "https://corsproxy.io/?" + encodeURIComponent(url);
+            // corsproxy.io seems to request HTML when the user-agent is a browser
+            options.headers['user-agent'] = baseUrl();
+        }
+        return await fetch(url, options);
+    }
 }
 
 function elt(id) {
@@ -244,6 +255,13 @@ async function yieldToBrowser() {
     return new Promise(function(resolve) {
         setTimeout(resolve, 0);
     });
+}
+
+function baseUrl() {
+    let url = new URL(window.location);
+    url.search = "";
+    url.hash = "";
+    return url;
 }
 
 main();
