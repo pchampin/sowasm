@@ -24,7 +24,7 @@ async function main() {
 
     function addAllEventListeners() {
         iformat.addEventListener('change', async () => {
-            //console.debug("change@iformat");
+            // console.debug("change@iformat");
             guessBox.checked = false;
             if (autoBox.checked) {
                 await doConvert();
@@ -32,7 +32,7 @@ async function main() {
         });
 
         guessBox.addEventListener('change', async () => {
-            //console.debug("change@guess");
+            // console.debug("change@guess");
             if (guessBox.checked) {
                 await doGuess();
                 if (autoBox.checked) {
@@ -45,12 +45,12 @@ async function main() {
         url.addEventListener('input', onInputChanged);
 
         oformat.addEventListener('change', async () => {
-            //console.debug("change@oformat");
+            // console.debug("change@oformat");
             await doConvert();
         });
 
         autoBox.addEventListener('change', async () => {
-            //console.debug("change@auto");
+            // console.debug("change@auto");
             convertBt.disabled = autoBox.checked;
             if (autoBox.checked) {
                 await doConvert();
@@ -130,9 +130,10 @@ async function main() {
         }
     }
 
+    /// ensure consistency of interface as loaded
+    /// (based on URL params or browser-persisted state)
     async function ensureConsistency() {
-        // ensure consistency of interface as loaded
-        // (based on URL params or browser-persisted state)
+        // console.debug("ensureConsistency")
         convertBt.disabled = autoBox.checked;
         loadBt.disabled = (url.value.length === 0);
         if (input.value) {
@@ -154,7 +155,7 @@ async function main() {
     }
 
     async function doGuess() {
-        //console.debug("doGuess");
+        // console.debug("doGuess");
         const guessed = guess(input.value);
         iformat.value = guessed;
         if (autoBox.checked) {
@@ -163,7 +164,7 @@ async function main() {
     }
 
     async function doConvert() {
-        //console.debug("doConvert");
+        // console.debug("doConvert");
         output.classList.remove('error');
         try {
             output.disabled = true;
