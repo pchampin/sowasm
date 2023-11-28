@@ -15,6 +15,8 @@ async function main() {
     const corsproxyBox = elt('corsproxy');
 
     let urlSynced = false;
+    let guessTimeout = null;
+    let convertTimeout = null;
 
     addAllEventListeners();
     applyUrlParams();
@@ -39,7 +41,14 @@ async function main() {
         });
 
         input.addEventListener('input', onInputChanged);
-        url.addEventListener('input', onInputChanged);
+
+        url.addEventListener('input', () => {
+            // console.debug("input@url");
+            urlSynced= false;
+            if (autoBox.checked) {
+                doConvertThrottled();
+            }
+        });
 
         oformat.addEventListener('change', async () => {
             // console.debug("change@oformat");
@@ -140,25 +149,33 @@ async function main() {
         }
     }
 
-    async function onInputChanged(synced) {
-        //console.debug("onInputChanged");
+    function onInputChanged(synced) {
+        // console.debug("onInputChanged");
         urlSynced= synced && url.value;
         if (guessBox.checked) {
-            await doGuess();
+            doGuessThrottled();
         }
         if (autoBox.checked) {
-            await doConvert();
+            doConvertThrottled();
         }
     }
 
     async function doGuess() {
         // console.debug("doGuess");
+        clearTimeout(guessTimeout);
         const guessed = guess(input.value);
         iformat.value = guessed;
     }
 
+    function doGuessThrottled() {
+        // console.debug("doGuessThrottled");
+        clearTimeout(guessTimeout);
+        guessTimeout = setTimeout(doGuess, 500);
+   }
+
     async function doConvert() {
         // console.debug("doConvert");
+        clearTimeout(convertTimeout);
         output.classList.remove('error');
         try {
             output.disabled = true;
@@ -176,6 +193,12 @@ async function main() {
         finally {
             output.disabled = false;
         }
+    }
+
+    function doConvertThrottled() {
+        // console.debug("doConvertThrottled");
+        clearTimeout(convertTimeout);
+        convertTimeout = setTimeout(doConvert, 500);
     }
 
     async function doLoad() {
