@@ -1,12 +1,6 @@
 import init, { convert, guess } from "./sowasm.js";
 import monacoLoader from 'https://cdn.jsdelivr.net/npm/@monaco-editor/loader@1.4.0/+esm';
 
-function formatToHighlight(format) {
-    if (format.endsWith('json')) return 'json'
-    if (format.endsWith('xml')) return 'xml'
-    return 'sparql'
-}
-
 async function main() {
     await init();
     const monaco = await monacoLoader.init();
@@ -27,10 +21,15 @@ async function main() {
     let guessTimeout = null;
     let convertTimeout = null;
 
+    // Theme from https://github.com/brijeshb42/monaco-themes/tree/master/themes
+    const theme = await (await fetch('assets/Solarized-dark.json')).json()
+    // Directly try a theme from its URL:
+    // const theme = await (await fetch('https://raw.githubusercontent.com/brijeshb42/monaco-themes/master/themes/Solarized-light.json')).json()
+    monaco.editor.defineTheme('solarized-dark', theme);
+
     // Setup the 2 Monaco editors
     const editorsConfig = {
-        theme: 'vs-dark',
-        language: 'sparql',
+        theme: 'solarized-dark',
         automaticLayout: true,
         scrollBeyondLastLine: false,
         lineNumbers: 'on',
@@ -45,6 +44,7 @@ async function main() {
     // TODO: add placeholder https://github.com/bultas/monaco-component/blob/master/dist/placeholder.js
     const ieditor = monaco.editor.create(input, {
         ...editorsConfig,
+        language: 'sparql',
         // value: '(Type or copy some RDF here)',
     });
     const ieditorModel = ieditor.getModel();
@@ -52,10 +52,9 @@ async function main() {
     const oeditor = monaco.editor.create(output, {
         ...editorsConfig,
         readOnly: true,
-        value: 'Result will appear here',
+        value: '(Result will appear here)',
     });
     const oeditorModel = oeditor.getModel();
-
 
     addAllEventListeners();
     applyUrlParams();
@@ -241,6 +240,12 @@ async function main() {
         // console.debug("doConvertThrottled");
         clearTimeout(convertTimeout);
         convertTimeout = setTimeout(doConvert, 500);
+    }
+
+    function formatToHighlight(format) {
+        if (format.endsWith('json')) return 'json'
+        if (format.endsWith('xml')) return 'xml'
+        return 'sparql'
     }
 
     async function doLoad() {
