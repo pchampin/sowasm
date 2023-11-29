@@ -124,7 +124,6 @@ async function main() {
                 urlParams.set('noauto', '');
             }
             console.log(!input.classList.contains('error'));
-            console.log(!input.disabled);
             console.log(!urlSynced);
             console.log(!input.classList.contains('error') && !input.disabled && !urlSynced) ;
             if (!input.classList.contains('error') && !input.disabled && !urlSynced) {
@@ -218,7 +217,6 @@ async function main() {
         clearTimeout(convertTimeout);
         output.classList.remove('error');
         try {
-            output.disabled = true;
             oeditor.setValue("(parsing)");
             if (!iformat.value) {
                 throw "Input format could not be guessed";
@@ -229,9 +227,6 @@ async function main() {
         catch (err) {
             output.classList.add('error');
             oeditor.setValue(err);
-        }
-        finally {
-            output.disabled = false;
         }
     }
 
