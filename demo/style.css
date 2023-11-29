@@ -1,8 +1,35 @@
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100% - 1em;
+    margin: 0.5em;
+}
+h1 {
+    margin-bottom: 0;
+}
+
 #idiv, #odiv {
-    display: inline-block;
-    width: 50em;
-    margin: 1em 1em 0 0;
-    vertical-align: top;
+    width: 100%;
+}
+#iodiv {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+/* Editors side by side on medium and large screens */
+/* To make it work only on large screens use 1024px */
+@media (min-width: 768px) {
+    #iodiv {
+        display: flex;
+        flex-direction: row;
+        gap: 0.5em;
+    }
+    #idiv, #odiv {
+        width: calc(50%);
+    }
 }
 
 #input, #output {
