@@ -4,7 +4,6 @@ import monacoLoader from 'https://cdn.jsdelivr.net/npm/@monaco-editor/loader@1.4
 async function main() {
     await init();
     const monaco = await monacoLoader.init();
-    // https://github.com/mapbox/mapbox-gl-js/blob/main/debug/standard-style.html#L131
 
     const guessBox = elt('guess');
     const iformat = elt('iformat');
