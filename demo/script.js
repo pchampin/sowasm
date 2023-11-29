@@ -21,7 +21,7 @@ async function main() {
     let convertTimeout = null;
 
     // Theme from https://github.com/brijeshb42/monaco-themes/tree/master/themes
-    const theme = await (await fetch('assets/Solarized-dark.json')).json()
+    const theme = await (await fetch('assets/Solarized-dark.json')).json();
     // Directly try a theme from its URL:
     // const theme = await (await fetch('https://raw.githubusercontent.com/brijeshb42/monaco-themes/master/themes/Solarized-light.json')).json()
     monaco.editor.defineTheme('solarized-dark', theme);
