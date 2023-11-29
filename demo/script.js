@@ -242,9 +242,9 @@ async function main() {
     }
 
     function formatToHighlight(format) {
-        if (format.endsWith('json')) return 'json'
-        if (format.endsWith('xml')) return 'xml'
-        return 'sparql'
+        if (format.endsWith('json')) return 'json';
+        if (format.endsWith('xml')) return 'xml';
+        return 'sparql';
     }
 
     async function doLoad() {
