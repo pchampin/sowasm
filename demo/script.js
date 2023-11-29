@@ -271,7 +271,7 @@ async function main() {
             ieditor.setValue(err);
         }
         finally {
-            input.disabled = false;
+            ieditor.updateOptions({readOnly: true});
         }
     }
 
