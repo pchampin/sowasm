@@ -263,7 +263,7 @@ async function main() {
                 // iformat.value will be empty if the ctyp is unknown
                 guessBox.checked = (!iformat.value);
             }
-            ieditor.setValue(await resp.text())
+            ieditor.setValue(await resp.text());
             onInputChanged(true);
         }
         catch(err) {
