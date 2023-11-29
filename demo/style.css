@@ -8,6 +8,7 @@
 #input, #output {
     width: 100%;
     height: 25em;
+    margin-top: 0.5em;
 }
 
 textarea.error {

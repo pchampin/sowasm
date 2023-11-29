@@ -7,6 +7,7 @@
 
 <h1>SoWasm</h1>
 <p>An RDF playground based on the <a href="https://crates.io/crates/sophia">Sophia</a> library.</p>
+
 <div id="idiv">
     <select id="iformat">
         <option value="application/n-triples">N-Triples</option>
@@ -18,11 +19,11 @@
     </select>
     <label><input id="guess" type="checkbox" checked>Guess format</label>
 
-    <textarea id="input" placeholder="type or copy some RDF here"></textarea>
+    <div id="input" class="editor"></div>
 
     <div class=toolbar>
       <label for=url>URL:</label>
-      <input id="url"> 
+      <input id="url">
       <button id="load">load</button>
     </div>
 
@@ -46,7 +47,7 @@
     <label><input id="auto" type="checkbox" checked>Automatic</label>
     <button id="convert" disabled>Convert</button>
 
-    <textarea id="output" readonly placeholder="result will appear here"></textarea>
+    <div id="output" class="editor"></div>
 
     <div class=toolbar>
         <button id="permalink">Copy permalink</button>

@@ -1,7 +1,16 @@
 import init, { convert, guess } from "./sowasm.js";
+import monacoLoader from 'https://cdn.jsdelivr.net/npm/@monaco-editor/loader@1.4.0/+esm';
+
+function formatToHighlight(format) {
+    if (format.endsWith('json')) return 'json'
+    if (format.endsWith('xml')) return 'xml'
+    return 'sparql'
+}
 
 async function main() {
     await init();
+    const monaco = await monacoLoader.init();
+    // https://github.com/mapbox/mapbox-gl-js/blob/main/debug/standard-style.html#L131
 
     const guessBox = elt('guess');
     const iformat = elt('iformat');
@@ -17,6 +26,36 @@ async function main() {
     let urlSynced = false;
     let guessTimeout = null;
     let convertTimeout = null;
+
+    // Setup the 2 Monaco editors
+    const editorsConfig = {
+        theme: 'vs-dark',
+        language: 'sparql',
+        automaticLayout: true,
+        scrollBeyondLastLine: false,
+        lineNumbers: 'on',
+        minimap: {
+            enabled: false
+        },
+        scrollbar: {
+            alwaysConsumeMouseWheel: false
+        },
+    };
+
+    // TODO: add placeholder https://github.com/bultas/monaco-component/blob/master/dist/placeholder.js
+    const ieditor = monaco.editor.create(input, {
+        ...editorsConfig,
+        // value: '(Type or copy some RDF here)',
+    });
+    const ieditorModel = ieditor.getModel();
+
+    const oeditor = monaco.editor.create(output, {
+        ...editorsConfig,
+        readOnly: true,
+        value: 'Result will appear here',
+    });
+    const oeditorModel = oeditor.getModel();
+
 
     addAllEventListeners();
     applyUrlParams();
@@ -52,6 +91,7 @@ async function main() {
 
         oformat.addEventListener('change', async () => {
             // console.debug("change@oformat");
+            monaco.editor.setModelLanguage(oeditorModel, formatToHighlight(oformat.value));
             await doConvert();
         });
 
@@ -90,7 +130,7 @@ async function main() {
             console.log(!urlSynced);
             console.log(!input.classList.contains('error') && !input.disabled && !urlSynced) ;
             if (!input.classList.contains('error') && !input.disabled && !urlSynced) {
-                urlParams.set('input', input.value);
+                urlParams.set('input', ieditor.getValue());
             }
             if (url.value) {
                 urlParams.set('url', url.value);
@@ -115,6 +155,7 @@ async function main() {
         }
         if (urlParams.has('oformat')) {
             oformat.value = urlParams.get('oformat');
+            monaco.editor.setModelLanguage(oeditorModel, formatToHighlight(oformat.value));
         }
         if (urlParams.has('guess')) {
             guessBox.checked = true;
@@ -129,7 +170,7 @@ async function main() {
             autoBox.checked = false;
         }
         if (urlParams.has('input')) {
-            input.value = urlParams.get('input');
+            ieditor.setValue(urlParams.get('input'));
         }
         if (urlParams.has('corsproxy')) {
             corsproxyBox.checked = true;
@@ -142,7 +183,7 @@ async function main() {
         // console.debug("ensureConsistency")
         convertBt.disabled = autoBox.checked;
         loadBt.disabled = (url.value.length === 0);
-        if (input.value) {
+        if (ieditor.getValue()) {
             onInputChanged();
         } else if (url.value) {
             await doLoad();
@@ -163,15 +204,16 @@ async function main() {
     async function doGuess() {
         // console.debug("doGuess");
         clearTimeout(guessTimeout);
-        const guessed = guess(input.value);
+        const guessed = guess(ieditor.getValue());
         iformat.value = guessed;
+        monaco.editor.setModelLanguage(ieditorModel, formatToHighlight(guessed));
     }
 
     function doGuessThrottled() {
         // console.debug("doGuessThrottled");
         clearTimeout(guessTimeout);
         guessTimeout = setTimeout(doGuess, 500);
-   }
+    }
 
     async function doConvert() {
         // console.debug("doConvert");
@@ -179,16 +221,16 @@ async function main() {
         output.classList.remove('error');
         try {
             output.disabled = true;
-            output.value = "(parsing)";
+            oeditor.setValue("(parsing)");
             if (!iformat.value) {
                 throw "Input format could not be guessed";
             }
             await yieldToBrowser();
-            output.value = await convert(input.value, iformat.value || null, oformat.value, url.value || null);
+            oeditor.setValue(await convert(ieditor.getValue(), iformat.value || null, oformat.value, url.value || null));
         }
         catch (err) {
             output.classList.add('error');
-            output.value = err;
+            oeditor.setValue(err);
         }
         finally {
             output.disabled = false;
@@ -204,9 +246,9 @@ async function main() {
     async function doLoad() {
         input.classList.remove('error');
         try {
-            input.value = "(loading)";
-            input.disabled = true;
-            output.value = "";
+            ieditor.setValue("(loading)");
+            ieditor.updateOptions({readOnly: true});
+            oeditor.setValue("");
             const resp = await myFetch(url.value);
             if (Math.floor(resp.status / 100) !== 2) {
                 throw ("Got status " + resp.status);
@@ -217,12 +259,12 @@ async function main() {
                 // iformat.value will be empty if the ctyp is unknown
                 guessBox.checked = (!iformat.value);
             }
-            input.value = await resp.text();
+            ieditor.setValue(await resp.text())
             onInputChanged(true);
         }
         catch(err) {
             input.classList.add('error');
-            input.value = err;
+            ieditor.setValue(err);
         }
         finally {
             input.disabled = false;
