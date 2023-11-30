@@ -266,7 +266,7 @@ async function main() {
             ieditor.setValue(err);
         }
         finally {
-            ieditor.updateOptions({readOnly: true});
+            ieditor.updateOptions({readOnly: false});
         }
     }
 
