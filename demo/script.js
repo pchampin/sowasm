@@ -47,6 +47,9 @@ async function main() {
         // value: '(Type or copy some RDF here)',
     });
     const ieditorModel = ieditor.getModel();
+    // Fix tab behavior
+    ieditor.addCommand(monaco.KeyMod.Shift | monaco.KeyCode.Tab, () => guessBox.focus());
+    ieditor.addCommand(monaco.KeyCode.Tab, () => url.focus());
 
     const oeditor = monaco.editor.create(output, {
         ...editorsConfig,
@@ -77,7 +80,7 @@ async function main() {
             }
         });
 
-        input.addEventListener('input', onInputChanged);
+        ieditorModel.onDidChangeContent((event) => onInputChanged());
 
         url.addEventListener('input', () => {
             // console.debug("input@url");
