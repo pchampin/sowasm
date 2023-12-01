@@ -38,10 +38,6 @@ h1 {
     margin-top: 0.5em;
 }
 
-textarea.error {
-    color: red;
-}
-
 .toolbar {
     display: flex;
     margin-top: 0.5em;

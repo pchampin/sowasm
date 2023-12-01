@@ -26,7 +26,7 @@ async function main() {
     // const theme = await (await fetch('https://raw.githubusercontent.com/brijeshb42/monaco-themes/master/themes/Solarized-light.json')).json()
     monaco.editor.defineTheme('solarized-dark', theme);
 
-    // Setup the 2 Monaco editors
+    // Setup the 2 Monaco editors https://microsoft.github.io/monaco-editor/playground
     const editorsConfig = {
         theme: 'solarized-dark',
         automaticLayout: true,
@@ -89,7 +89,6 @@ async function main() {
 
         oformat.addEventListener('change', async () => {
             // console.debug("change@oformat");
-            monaco.editor.setModelLanguage(oeditorModel, formatToHighlight(oformat.value));
             await doConvert();
         });
 
@@ -215,7 +214,8 @@ async function main() {
     async function doConvert() {
         // console.debug("doConvert");
         clearTimeout(convertTimeout);
-        output.classList.remove('error');
+        monaco.editor.setModelMarkers(ieditorModel, 'errors', []);
+        monaco.editor.setModelLanguage(oeditorModel, formatToHighlight(oformat.value));
         try {
             oeditor.setValue("(parsing)");
             if (!iformat.value) {
@@ -225,8 +225,7 @@ async function main() {
             oeditor.setValue(await convert(ieditor.getValue(), iformat.value || null, oformat.value, url.value || null));
         }
         catch (err) {
-            output.classList.add('error');
-            oeditor.setValue(err);
+            displayError(err)
         }
     }
 
@@ -234,6 +233,24 @@ async function main() {
         // console.debug("doConvertThrottled");
         clearTimeout(convertTimeout);
         convertTimeout = setTimeout(doConvert, 500);
+    }
+
+    function displayError(err) {
+        monaco.editor.setModelLanguage(oeditorModel, "");
+        oeditor.setValue(err);
+        // Handle error msg with line and position returned by nt/ttl/trig parsers
+        const match = err.match(/(.*?) on line (\d+) at position (\d+)/);
+        const [msg, lineNumber, position] = (match)
+            ? [match[1], parseInt(match[2], 10), parseInt(match[3], 10)]
+            : [err, 1, 1];
+        monaco.editor.setModelMarkers(ieditorModel, 'errors', [{
+            startLineNumber: lineNumber,
+            startColumn: position,
+            endLineNumber: lineNumber,
+            endColumn: position + 3,
+            message: msg,
+            severity: monaco.MarkerSeverity.Error
+        }]);
     }
 
     function formatToHighlight(format) {
