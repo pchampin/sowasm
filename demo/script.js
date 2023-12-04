@@ -1,7 +1,9 @@
 import init, { convert, guess } from "./sowasm.js";
+import monacoLoader from 'https://cdn.jsdelivr.net/npm/@monaco-editor/loader@1.4.0/+esm';
 
 async function main() {
     await init();
+    const monaco = await monacoLoader.init();
 
     const guessBox = elt('guess');
     const iformat = elt('iformat');
@@ -17,6 +19,44 @@ async function main() {
     let urlSynced = false;
     let guessTimeout = null;
     let convertTimeout = null;
+
+    // Theme from https://github.com/brijeshb42/monaco-themes/tree/master/themes
+    const theme = await (await fetch('assets/Solarized-dark.json')).json();
+    // Directly try a theme from its URL:
+    // const theme = await (await fetch('https://raw.githubusercontent.com/brijeshb42/monaco-themes/master/themes/Solarized-light.json')).json()
+    monaco.editor.defineTheme('solarized-dark', theme);
+
+    // Setup the 2 Monaco editors https://microsoft.github.io/monaco-editor/playground
+    const editorsConfig = {
+        theme: 'solarized-dark',
+        automaticLayout: true,
+        scrollBeyondLastLine: false,
+        lineNumbers: 'on',
+        minimap: {
+            enabled: false
+        },
+        scrollbar: {
+            alwaysConsumeMouseWheel: false
+        },
+    };
+
+    // TODO: add placeholder https://github.com/bultas/monaco-component/blob/master/dist/placeholder.js
+    const ieditor = monaco.editor.create(input, {
+        ...editorsConfig,
+        language: 'sparql',
+        // value: '(Type or copy some RDF here)',
+    });
+    const ieditorModel = ieditor.getModel();
+    // Fix tab behavior
+    ieditor.addCommand(monaco.KeyMod.Shift | monaco.KeyCode.Tab, () => guessBox.focus());
+    ieditor.addCommand(monaco.KeyCode.Tab, () => url.focus());
+
+    const oeditor = monaco.editor.create(output, {
+        ...editorsConfig,
+        readOnly: true,
+        value: '(Result will appear here)',
+    });
+    const oeditorModel = oeditor.getModel();
 
     addAllEventListeners();
     applyUrlParams();
@@ -40,7 +80,7 @@ async function main() {
             }
         });
 
-        input.addEventListener('input', onInputChanged);
+        ieditorModel.onDidChangeContent((event) => onInputChanged());
 
         url.addEventListener('input', () => {
             // console.debug("input@url");
@@ -86,11 +126,10 @@ async function main() {
                 urlParams.set('noauto', '');
             }
             console.log(!input.classList.contains('error'));
-            console.log(!input.disabled);
             console.log(!urlSynced);
             console.log(!input.classList.contains('error') && !input.disabled && !urlSynced) ;
             if (!input.classList.contains('error') && !input.disabled && !urlSynced) {
-                urlParams.set('input', input.value);
+                urlParams.set('input', ieditor.getValue());
             }
             if (url.value) {
                 urlParams.set('url', url.value);
@@ -115,6 +154,7 @@ async function main() {
         }
         if (urlParams.has('oformat')) {
             oformat.value = urlParams.get('oformat');
+            monaco.editor.setModelLanguage(oeditorModel, formatToHighlight(oformat.value));
         }
         if (urlParams.has('guess')) {
             guessBox.checked = true;
@@ -129,7 +169,7 @@ async function main() {
             autoBox.checked = false;
         }
         if (urlParams.has('input')) {
-            input.value = urlParams.get('input');
+            ieditor.setValue(urlParams.get('input'));
         }
         if (urlParams.has('corsproxy')) {
             corsproxyBox.checked = true;
@@ -142,7 +182,7 @@ async function main() {
         // console.debug("ensureConsistency")
         convertBt.disabled = autoBox.checked;
         loadBt.disabled = (url.value.length === 0);
-        if (input.value) {
+        if (ieditor.getValue()) {
             onInputChanged();
         } else if (url.value) {
             await doLoad();
@@ -163,35 +203,32 @@ async function main() {
     async function doGuess() {
         // console.debug("doGuess");
         clearTimeout(guessTimeout);
-        const guessed = guess(input.value);
+        const guessed = guess(ieditor.getValue());
         iformat.value = guessed;
+        monaco.editor.setModelLanguage(ieditorModel, formatToHighlight(guessed));
     }
 
     function doGuessThrottled() {
         // console.debug("doGuessThrottled");
         clearTimeout(guessTimeout);
         guessTimeout = setTimeout(doGuess, 500);
-   }
+    }
 
     async function doConvert() {
         // console.debug("doConvert");
         clearTimeout(convertTimeout);
-        output.classList.remove('error');
+        monaco.editor.setModelMarkers(ieditorModel, 'errors', []);
+        monaco.editor.setModelLanguage(oeditorModel, formatToHighlight(oformat.value));
         try {
-            output.disabled = true;
-            output.value = "(parsing)";
+            oeditor.setValue("(parsing)");
             if (!iformat.value) {
                 throw "Input format could not be guessed";
             }
             await yieldToBrowser();
-            output.value = await convert(input.value, iformat.value || null, oformat.value, url.value || null);
+            oeditor.setValue(await convert(ieditor.getValue(), iformat.value || null, oformat.value, url.value || null));
         }
         catch (err) {
-            output.classList.add('error');
-            output.value = err;
-        }
-        finally {
-            output.disabled = false;
+            displayError(err)
         }
     }
 
@@ -201,12 +238,36 @@ async function main() {
         convertTimeout = setTimeout(doConvert, 500);
     }
 
+    function displayError(err) {
+        monaco.editor.setModelLanguage(oeditorModel, "");
+        oeditor.setValue(err);
+        // Handle error msg with line and position returned by nt/ttl/trig parsers
+        const match = err.match(/(.*?) on line (\d+) at position (\d+)/);
+        const [msg, lineNumber, position] = (match)
+            ? [match[1], parseInt(match[2], 10), parseInt(match[3], 10)]
+            : [err, 1, 1];
+        monaco.editor.setModelMarkers(ieditorModel, 'errors', [{
+            startLineNumber: lineNumber,
+            startColumn: position,
+            endLineNumber: lineNumber,
+            endColumn: position + 3,
+            message: msg,
+            severity: monaco.MarkerSeverity.Error
+        }]);
+    }
+
+    function formatToHighlight(format) {
+        if (format.endsWith('json')) return 'json';
+        if (format.endsWith('xml')) return 'xml';
+        return 'sparql';
+    }
+
     async function doLoad() {
         input.classList.remove('error');
         try {
-            input.value = "(loading)";
-            input.disabled = true;
-            output.value = "";
+            ieditor.setValue("(loading)");
+            ieditor.updateOptions({readOnly: true});
+            oeditor.setValue("");
             const resp = await myFetch(url.value);
             if (Math.floor(resp.status / 100) !== 2) {
                 throw ("Got status " + resp.status);
@@ -217,15 +278,15 @@ async function main() {
                 // iformat.value will be empty if the ctyp is unknown
                 guessBox.checked = (!iformat.value);
             }
-            input.value = await resp.text();
+            ieditor.setValue(await resp.text());
             onInputChanged(true);
         }
         catch(err) {
             input.classList.add('error');
-            input.value = err;
+            ieditor.setValue(err);
         }
         finally {
-            input.disabled = false;
+            ieditor.updateOptions({readOnly: false});
         }
     }
 
