@@ -228,7 +228,7 @@ async function main() {
             oeditor.setValue(await convert(ieditor.getValue(), iformat.value || null, oformat.value, url.value || null));
         }
         catch (err) {
-            displayError(err)
+            displayError(err);
         }
     }
 
@@ -243,9 +243,10 @@ async function main() {
         oeditor.setValue(err);
         // Handle error msg with line and position returned by nt/ttl/trig parsers
         const match = err.match(/(.*?) on line (\d+) at position (\d+)/);
-        const [msg, lineNumber, position] = (match)
-            ? [match[1], parseInt(match[2], 10), parseInt(match[3], 10)]
-            : [err, 1, 1];
+        const [msg, lineNumber, position] = ((match) ?
+            [match[1], parseInt(match[2], 10), parseInt(match[3], 10)] :
+            [err, 1, 1]
+        );
         monaco.editor.setModelMarkers(ieditorModel, 'errors', [{
             startLineNumber: lineNumber,
             startColumn: position,
