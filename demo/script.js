@@ -1,9 +1,13 @@
-import init, { convert, guess } from "./sowasm.js";
+import soWasmInit, { convert, guess } from "./sowasm.js";
 import monacoLoader from 'https://cdn.jsdelivr.net/npm/@monaco-editor/loader@1.4.0/+esm';
 
+
 async function main() {
-    await init();
-    const monaco = await monacoLoader.init();
+
+    const [_, monaco] = await Promise.all([
+        soWasmInit(),
+        monacoLoader.init(),
+    ]);
 
     const guessBox = elt('guess');
     const iformat = elt('iformat');
@@ -20,47 +24,45 @@ async function main() {
     let guessTimeout = null;
     let convertTimeout = null;
 
-    // Theme from https://github.com/brijeshb42/monaco-themes/tree/master/themes
-    const theme = await (await fetch('assets/Solarized-light.json')).json();
-    monaco.editor.defineTheme('solarized-light', theme);
-
-    // Setup the 2 Monaco editors https://microsoft.github.io/monaco-editor/playground
-    const editorsConfig = {
-        theme: 'solarized-light',
-        automaticLayout: true,
-        scrollBeyondLastLine: false,
-        lineNumbers: 'on',
-        minimap: {
-            enabled: false
-        },
-        scrollbar: {
-            alwaysConsumeMouseWheel: false
-        },
-    };
-
-    // TODO: add placeholder https://github.com/bultas/monaco-component/blob/master/dist/placeholder.js
-    const ieditor = monaco.editor.create(input, {
-        ...editorsConfig,
-        language: 'sparql',
-        // value: '(Type or copy some RDF here)',
-    });
-    const ieditorModel = ieditor.getModel();
-    // Fix tab behavior
-    ieditor.addCommand(monaco.KeyMod.Shift | monaco.KeyCode.Tab, () => guessBox.focus());
-    ieditor.addCommand(monaco.KeyCode.Tab, () => url.focus());
-
-    const oeditor = monaco.editor.create(output, {
-        ...editorsConfig,
-        readOnly: true,
-        value: '(Result will appear here)',
-    });
-    const oeditorModel = oeditor.getModel();
-
+    const [ieditor, ieditorModel, oeditor, oeditorModel] = makeMonacoEditors();
     addAllEventListeners();
     applyUrlParams();
     await ensureConsistency();
 
     /// Function definitions
+
+    function makeMonacoEditors() {
+        const editorsConfig = {
+            automaticLayout: true,
+            scrollBeyondLastLine: false,
+            lineNumbers: 'on',
+            minimap: {
+                enabled: false
+            },
+            scrollbar: {
+                alwaysConsumeMouseWheel: false
+            },
+        };
+
+        const ieditor = monaco.editor.create(input, {
+            ...editorsConfig,
+            language: 'sparql',
+        });
+        ieditor.trigger('source', 'editor.action.toggleTabFocusMode');
+        // TODO: set a placeholder, e.g. by using the trick here:
+        // https://github.com/bultas/monaco-component/blob/master/dist/placeholder.js
+
+        const oeditor = monaco.editor.create(output, {
+            ...editorsConfig,
+            readOnly: true,
+            value: '(Result will appear here)',
+        });
+
+        const ieditorModel = ieditor.getModel();
+        const oeditorModel = oeditor.getModel();
+
+        return [ieditor, ieditorModel, oeditor, oeditorModel];
+    }
 
     function addAllEventListeners() {
         iformat.addEventListener('change', async () => {
@@ -141,8 +143,8 @@ async function main() {
         });
     }
 
+    /// apply parameters from query string
     function applyUrlParams() {
-        // apply parameters from query string
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('iformat')) {
             iformat.value = urlParams.get('iformat');
@@ -256,6 +258,7 @@ async function main() {
     }
 
     function formatToHighlight(format) {
+        if (format === undefined) return 'text';
         if (format.endsWith('json')) return 'json';
         if (format.endsWith('xml')) return 'xml';
         return 'sparql';
