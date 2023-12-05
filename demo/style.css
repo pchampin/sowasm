@@ -53,6 +53,9 @@ h1 {
 #advancedOptions {
     margin-top: 0.5em;
 }
+details summary {
+    cursor: pointer;
+}
 
 #examples {
     margin-top: 0.5em;
