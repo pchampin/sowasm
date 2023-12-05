@@ -48,6 +48,7 @@ h1 {
 
 #url {
     flex-grow: 100;
+    margin: 0 0.5em;
 }
 
 #advancedOptions {
