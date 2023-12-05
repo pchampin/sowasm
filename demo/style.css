@@ -20,8 +20,7 @@ h1 {
 }
 
 /* Editors side by side on medium and large screens */
-/* To make it work only on large screens use 1024px */
-@media (min-width: 768px) {
+@media (min-width: 51em) {
     #iodiv {
         display: flex;
         flex-direction: row;
