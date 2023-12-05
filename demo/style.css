@@ -20,8 +20,8 @@ h1 {
     gap: 1em;
 }
 
-/* Editors side by side on medium and large screens */
-@media (min-width: 51em) {
+/* Editors side by side on large screens */
+@media (min-width: 90em) {
     #iodiv {
         display: flex;
         flex-direction: row;
@@ -34,7 +34,7 @@ h1 {
 
 #input, #output {
     width: 100%;
-    height: 25em;
+    height: 70vh;
     margin-top: 0.5em;
 }
 
