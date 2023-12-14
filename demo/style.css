@@ -1,4 +1,5 @@
 body {
+    font-family: sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -48,10 +49,14 @@ h1 {
 
 #url {
     flex-grow: 100;
+    margin: 0 0.5em;
 }
 
 #advancedOptions {
     margin-top: 0.5em;
+}
+details summary {
+    cursor: pointer;
 }
 
 #examples {
