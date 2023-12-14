@@ -1,6 +1,16 @@
 use std::{convert::Infallible, sync::Arc};
 // use sophia::jsonld::loader::{BoxFuture, FutureExt};
-use sophia::{api::{source::{QuadSource, TripleSource}, serializer::{TripleSerializer, Stringifier, QuadSerializer}, prelude::{Dataset, TripleParser, QuadParser}, term::SimpleTerm}, inmem::dataset::LightDataset, jsonld::{JsonLdOptions, loader}, iri::Iri};
+use sophia::{
+    api::{
+        prelude::{Dataset, QuadParser, TripleParser},
+        serializer::{QuadSerializer, Stringifier, TripleSerializer},
+        source::{QuadSource, TripleSource},
+        term::SimpleTerm,
+    },
+    inmem::dataset::LightDataset,
+    iri::Iri,
+    jsonld::{loader, JsonLdOptions},
+};
 
 mod guess_jsonld;
 mod utils;
@@ -11,33 +21,47 @@ use wasm_bindgen::prelude::*;
 /// Guess the syntax of the given source
 pub fn guess(source: &str) -> Option<String> {
     if parser::nt::parse_str(source).works() {
-        return Some("application/n-triples".into())
+        return Some("application/n-triples".into());
     }
     if parser::nq::parse_str(source).works() {
-        return Some("application/n-quads".into())
+        return Some("application/n-quads".into());
     }
     let b = Iri::new_unchecked("x-string:///".to_string());
     let base = Some(b.clone());
-    if (parser::turtle::TurtleParser{ base }).parse_str(source).works() {
-        return Some("text/turtle".into())
+    if (parser::turtle::TurtleParser { base })
+        .parse_str(source)
+        .works()
+    {
+        return Some("text/turtle".into());
     }
     let base = Some(b.clone());
-    if (parser::trig::TriGParser{ base }).parse_str(source).works() {
-        return Some("application/trig".into())
+    if (parser::trig::TriGParser { base })
+        .parse_str(source)
+        .works()
+    {
+        return Some("application/trig".into());
     }
     if guess_jsonld::works(source) {
-        return Some("application/ld+json".into())
+        return Some("application/ld+json".into());
     }
     let base = Some(b);
-    if (parser::xml::RdfXmlParser { base }).parse_str(source).works() {
-        return Some("application/rdf+xml".into())
+    if (parser::xml::RdfXmlParser { base })
+        .parse_str(source)
+        .works()
+    {
+        return Some("application/rdf+xml".into());
     }
     None
 }
 
 #[wasm_bindgen]
 /// Convert source from one format to another
-pub async fn convert(source: &str, iformat: &str, oformat: &str, base: Option<String>) -> Result<String, String> {
+pub async fn convert(
+    source: &str,
+    iformat: &str,
+    oformat: &str,
+    base: Option<String>,
+) -> Result<String, String> {
     let lds = parse(source, iformat, base).await?;
     serialize(&lds, oformat)
 }
@@ -45,7 +69,7 @@ pub async fn convert(source: &str, iformat: &str, oformat: &str, base: Option<St
 async fn parse(source: &str, format: &str, base: Option<String>) -> Result<LightDataset, String> {
     utils::set_panic_hook();
     let base = base.and_then(|s| Iri::new(s).ok());
-    match &format[..] {
+    match format {
         "application/n-triples" => parser::nt::parse_str(source).to_lds(),
         "application/n-quads" => parser::nq::parse_str(source).to_lds(),
         "text/turtle" => {
@@ -75,7 +99,7 @@ async fn parse(source: &str, format: &str, base: Option<String>) -> Result<Light
 fn serialize(lds: &LightDataset, format: &str) -> Result<String, String> {
     utils::set_panic_hook();
     let default: Option<SimpleTerm> = None;
-    let res = match &format[..] {
+    let res = match format {
         "application/n-triples" => serializer::nt::NtSerializer::new_stringifier()
             .serialize_graph(&lds.graph(default))
             .map_err(|e| e.to_string())?
@@ -90,25 +114,23 @@ fn serialize(lds: &LightDataset, format: &str) -> Result<String, String> {
             String::from_utf8(buffer).map_err(|e| e.to_string())?
         }
         "text/turtle" => {
-            let config = serializer::turtle::TurtleConfig::new()
-                .with_pretty(true);
-                // TODO add support for prefix map ?
+            let config = serializer::turtle::TurtleConfig::new().with_pretty(true);
+            // TODO add support for prefix map ?
             serializer::turtle::TurtleSerializer::new_stringifier_with_config(config)
                 .serialize_graph(&lds.graph(default))
                 .map_err(|e| e.to_string())?
                 .to_string()
         }
         "application/trig" => {
-            let config = serializer::trig::TrigConfig::new()
-                .with_pretty(true);
-                // TODO add support for prefix map ?
+            let config = serializer::trig::TrigConfig::new().with_pretty(true);
+            // TODO add support for prefix map ?
             serializer::trig::TrigSerializer::new_stringifier_with_config(config)
                 .serialize_dataset(&lds)
                 .map_err(|e| e.to_string())?
                 .to_string()
         }
         "application/rdf+xml" => {
-            let config = serializer::xml::RdfXmlConfig{};
+            let config = serializer::xml::RdfXmlConfig {};
             serializer::xml::RdfXmlSerializer::new_stringifier_with_config(config)
                 .serialize_graph(&lds.graph(default))
                 .map_err(|e| e.to_string())?
@@ -128,7 +150,8 @@ fn serialize(lds: &LightDataset, format: &str) -> Result<String, String> {
 
 trait TripleSourceExt: TripleSource + Sized {
     fn works(mut self) -> bool {
-        self.try_for_each_triple(|_| Ok(()) as  Result<(), Infallible>).is_ok()
+        self.try_for_each_triple(|_| Ok(()) as Result<(), Infallible>)
+            .is_ok()
     }
 
     fn how_many(mut self) -> Result<usize, usize> {
@@ -149,11 +172,12 @@ trait TripleSourceExt: TripleSource + Sized {
         self.to_quads().collect_quads().map_err(|e| e.to_string())
     }
 }
-impl <T: TripleSource + Sized> TripleSourceExt for T {}
+impl<T: TripleSource + Sized> TripleSourceExt for T {}
 
 trait QuadSourceExt: QuadSource + Sized {
     fn works(mut self) -> bool {
-        self.try_for_each_quad(|_| Ok(()) as  Result<(), Infallible>).is_ok()
+        self.try_for_each_quad(|_| Ok(()) as Result<(), Infallible>)
+            .is_ok()
     }
 
     fn how_many(mut self) -> Result<usize, usize> {
@@ -174,16 +198,16 @@ trait QuadSourceExt: QuadSource + Sized {
         self.collect_quads().map_err(|e| e.to_string())
     }
 }
-impl <T: QuadSource + Sized> QuadSourceExt for T {}
+impl<T: QuadSource + Sized> QuadSourceExt for T {}
 
 mod parser {
+    pub use sophia::jsonld::parser as jsonld;
     pub use sophia::turtle::parser::{nq, nt, trig, turtle};
     pub use sophia::xml::parser as xml;
-    pub use sophia::jsonld::parser as jsonld;
 }
 
 mod serializer {
+    pub use sophia::jsonld::serializer as jsonld;
     pub use sophia::turtle::serializer::{nq, nt, trig, turtle};
     pub use sophia::xml::serializer as xml;
-    pub use sophia::jsonld::serializer as jsonld;
 }
