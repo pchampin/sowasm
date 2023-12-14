@@ -115,7 +115,8 @@ fn serialize(lds: &LightDataset, format: &str) -> Result<String, String> {
                 .to_string()
         }
         "application/ld+json" => {
-            serializer::jsonld::JsonLdSerializer::new_stringifier()
+            let opt = JsonLdOptions::new().with_spaces(2);
+            serializer::jsonld::JsonLdSerializer::new_stringifier_with_options(opt)
                 .serialize_dataset(&lds)
                 .map_err(|e| e.to_string())?
                 .to_string()
