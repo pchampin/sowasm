@@ -68,6 +68,9 @@ async function main() {
         iformat.addEventListener('change', async () => {
             // console.debug("change@iformat");
             guessBox.checked = false;
+            if (autoBox.checked) {
+                await doConvert();
+            }
         });
 
         guessBox.addEventListener('change', async () => {
