@@ -6,8 +6,15 @@ body {
     width: 100% - 1em;
     margin: 0.5em;
 }
-h1 {
-    margin-bottom: 0;
+
+header {
+    display: flex;
+    align-items: baseline;
+}
+
+header > * {
+    font-size: 120%;
+    margin: 0 0.33em;
 }
 
 #idiv, #odiv {
