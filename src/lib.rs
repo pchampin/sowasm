@@ -85,7 +85,7 @@ async fn parse(source: &str, format: &str, base: Option<String>) -> Result<Light
             par.parse_str(source).to_lds()
         }
         "application/ld+json" => {
-            let mut opt = JsonLdOptions::<loader::HttpLoader>::default();
+            let mut opt = JsonLdOptions::new().with_default_document_loader::<loader::HttpLoader>();
             if let Some(base) = base {
                 opt = opt.with_base(base.map_unchecked(Arc::from));
             }

@@ -15,12 +15,12 @@ use super::*;
 pub fn works(source: &str) -> bool {
     let opts = JsonLdOptions::new()
         .with_base(Iri::new_unchecked("x-string:///".into()))
-        .with_document_loader(ClosureLoader::new(
-            |iri: Iri<String>| -> BoxFuture<Result<String, String>> {
+        .with_document_loader_closure(|| {
+            ClosureLoader::new(|iri: Iri<String>| -> BoxFuture<Result<String, String>> {
                 let url = iri.as_str().to_string();
                 async move { Ok(format!(r#"{{ "@context": {{ "@vocab": "{url}#" }} }}"#)) }.boxed()
-            },
-        ));
+            })
+        });
     let p = JsonLdParser::new_with_options(opts);
     p.parse_str(source).works()
 }
