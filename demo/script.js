@@ -1,6 +1,8 @@
 import soWasmInit, { convert, guess } from "./sowasm.js";
 import monacoLoader from 'https://cdn.jsdelivr.net/npm/@monaco-editor/loader@1.4.0/+esm';
 
+const DEFAULT_BASE = "https://example.org/dummy-base-iri/";
+
 
 async function main() {
 
@@ -28,6 +30,8 @@ async function main() {
     addAllEventListeners();
     applyUrlParams();
     await ensureConsistency();
+
+    url.placeholder = DEFAULT_BASE;
 
     /// Function definitions
 
@@ -228,7 +232,7 @@ async function main() {
                 throw "Input format could not be guessed";
             }
             await yieldToBrowser();
-            oeditor.setValue(await convert(ieditor.getValue(), iformat.value || null, oformat.value, url.value || null));
+            oeditor.setValue(await convert(ieditor.getValue(), iformat.value || null, oformat.value, url.value || url.placeholder));
         }
         catch (err) {
             displayError(err);
