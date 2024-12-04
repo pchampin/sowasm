@@ -74,3 +74,18 @@ details summary {
 #examples, footer {
     border-top: thin solid lightGray;
 }
+
+#web-doc-loader-warning {
+    display: none;
+}
+
+#web-doc-loader:checked ~ #web-doc-loader-warning {
+    display: block;
+}
+
+.warning {
+    border: thick solid red;
+    background-color: pink;
+    padding: 0.3ex 0.6ex;
+    margin-top: 0.5em;
+}

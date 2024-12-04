@@ -40,6 +40,14 @@
                 <summary>Advanced options</summary>
                 <ul>
                     <li><label><input id="corsproxy" type="checkbox"> use <a href="https://corsproxy.io">corsproxy.io</a></label>
+                    <li><input id="web-doc-loader" type="checkbox">
+                      <label for="web-doc-loader"> JSON-LD parser can fetch contexts from the web</label>
+                      <div id="web-doc-loader-warning" class=warning>
+                        This feature is a convenience for quick testing, but be reminded that retrieving arbitrary contexts from the web raises
+                        <a href="https://www.w3.org/TR/json-ld11/#iana-security">security</a> and
+                        <a href="https://www.w3.org/TR/json-ld11/#privacy">privacy</a> issues.
+                        See <a href="https://www.w3.org/TR/json-ld11/#loading-documents">those guidelines</a> about how to handle context IRIs in production systems.
+                      </div>
                 </ul>
             </details>
         </div>
@@ -66,7 +74,7 @@
     <div id=examples>
         A few examples:
         <ul>
-            <li><a href="?guess=&oformat=text%2Fturtle&auto=&input=%7B%0A++%22%40context%22%3A+%22https%3A%2F%2Fschema.org%2F%22%2C%0A++%22type%22%3A+%22Person%22%2C%0A++%22name%22%3A+%22Pierre-Antoine+Champin%22%2C%0A++%22url%22%3A+%22https%3A%2F%2Fchampin.net%2F%22%0A%7D">A simple JSON-LD example to Turtle</a>
+            <li><a href="?guess=&oformat=text%2Fturtle&auto=&webDocLoader=&input=%7B%0A++%22%40context%22%3A+%22https%3A%2F%2Fschema.org%2F%22%2C%0A++%22type%22%3A+%22Person%22%2C%0A++%22name%22%3A+%22Pierre-Antoine+Champin%22%2C%0A++%22url%22%3A+%22https%3A%2F%2Fchampin.net%2F%22%0A%7D">A simple JSON-LD example to Turtle</a>
             <li><a href="?noguess=&iformat=text%2Fturtle&oformat=application%2Fx-canonical-n-quads&auto=&url=https%3A%2F%2Fwww.w3.org%2FPeople%2FBerners-Lee%2Fcard.ttl">Tim Berners Lee's profile, from Turtle to Canonicalized RDF</a>
             <li><a href="?noguess=&iformat=application%2Frdf%2Bxml&oformat=application%2Fld%2Bjson&auto=&url=https%3A%2F%2Fwww.w3.org%2FPeople%2FBerners-Lee%2Fcard.rdf">Tim Berners Lee's profile, from RDF/XML to JSON-LD</a>
         </ul>

@@ -61,12 +61,18 @@ pub async fn convert(
     iformat: &str,
     oformat: &str,
     base: Option<String>,
+    web_doc_loader: bool,
 ) -> Result<String, String> {
-    let lds = parse(source, iformat, base).await?;
+    let lds = parse(source, iformat, base, web_doc_loader).await?;
     serialize(&lds, oformat)
 }
 
-async fn parse(source: &str, format: &str, base: Option<String>) -> Result<LightDataset, String> {
+async fn parse(
+    source: &str,
+    format: &str,
+    base: Option<String>,
+    web_doc_loader: bool,
+) -> Result<LightDataset, String> {
     utils::set_panic_hook();
     let base = base.and_then(|s| Iri::new(s).ok());
     match format {
@@ -84,8 +90,16 @@ async fn parse(source: &str, format: &str, base: Option<String>) -> Result<Light
             let par = parser::xml::RdfXmlParser { base };
             par.parse_str(source).to_lds()
         }
-        "application/ld+json" => {
+        "application/ld+json" if web_doc_loader => {
             let mut opt = JsonLdOptions::new().with_default_document_loader::<loader::HttpLoader>();
+            if let Some(base) = base {
+                opt = opt.with_base(base.map_unchecked(Arc::from));
+            }
+            let par = parser::jsonld::JsonLdParser::new_with_options(opt);
+            par.async_parse_str(source).await.to_lds()
+        }
+        "application/ld+json" if !web_doc_loader => {
+            let mut opt = JsonLdOptions::new();
             if let Some(base) = base {
                 opt = opt.with_base(base.map_unchecked(Arc::from));
             }

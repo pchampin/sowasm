@@ -20,7 +20,9 @@ async function main() {
     const convertBt = elt('convert');
     const url = elt('url');
     const loadBt = elt('load');
+    const advancedOptions = elt('advancedOptions');
     const corsproxyBox = elt('corsproxy');
+    const webDocLoaderBox = elt('web-doc-loader');
 
     let urlSynced = false;
     let guessTimeout = null;
@@ -144,6 +146,9 @@ async function main() {
             if (corsproxyBox.checked) {
                 urlParams.set('corsproxy', '');
             }
+            if (webDocLoaderBox.checked) {
+                urlParams.set('webDocLoader', '');
+            }
             const link = baseUrl();
             link.search = urlParams.toString();
             navigator.clipboard.writeText(link.toString());
@@ -180,6 +185,11 @@ async function main() {
         }
         if (urlParams.has('corsproxy')) {
             corsproxyBox.checked = true;
+            advancedOptions.open = true;
+        }
+        if (urlParams.has('webDocLoader')) {
+            webDocLoaderBox.checked = true;
+            advancedOptions.open = true;
         }
     }
 
@@ -232,7 +242,13 @@ async function main() {
                 throw "Input format could not be guessed";
             }
             await yieldToBrowser();
-            oeditor.setValue(await convert(ieditor.getValue(), iformat.value || null, oformat.value, url.value || url.placeholder));
+            oeditor.setValue(await convert(
+                ieditor.getValue(),
+                iformat.value || null,
+                oformat.value,
+                url.value || url.placeholder,
+                webDocLoaderBox.checked,
+            ));
         }
         catch (err) {
             displayError(err);
