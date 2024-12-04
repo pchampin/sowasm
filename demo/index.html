@@ -51,7 +51,7 @@
                 <option value="application/trig">TriG</option>
                 <option value="application/ld+json">JSON-LD</option>
                 <option value="application/rdf+xml">RDF/XML</option>
-                <option value="application/canonical-n-quads">Canonicalize with RDFC 1.0</option>
+                <option value="application/x-canonical-n-quads">Canonicalize with RDFC 1.0</option>
             </select>
             <label><input id="auto" type="checkbox" checked>Automatic</label>
             <button id="convert" disabled>Convert</button>
@@ -67,7 +67,7 @@
         A few examples:
         <ul>
             <li><a href="?guess=&oformat=text%2Fturtle&auto=&input=%7B%0A++%22%40context%22%3A+%22https%3A%2F%2Fschema.org%2F%22%2C%0A++%22type%22%3A+%22Person%22%2C%0A++%22name%22%3A+%22Pierre-Antoine+Champin%22%2C%0A++%22url%22%3A+%22https%3A%2F%2Fchampin.net%2F%22%0A%7D">A simple JSON-LD example to Turtle</a>
-            <li><a href="?noguess=&iformat=text%2Fturtle&oformat=application%2Fcanonical-n-quads&auto=&url=https%3A%2F%2Fwww.w3.org%2FPeople%2FBerners-Lee%2Fcard.ttl">Tim Berners Lee's profile, from Turtle to Canonicalized RDF</a>
+            <li><a href="?noguess=&iformat=text%2Fturtle&oformat=application%2Fx-canonical-n-quads&auto=&url=https%3A%2F%2Fwww.w3.org%2FPeople%2FBerners-Lee%2Fcard.ttl">Tim Berners Lee's profile, from Turtle to Canonicalized RDF</a>
             <li><a href="?noguess=&iformat=application%2Frdf%2Bxml&oformat=application%2Fld%2Bjson&auto=&url=https%3A%2F%2Fwww.w3.org%2FPeople%2FBerners-Lee%2Fcard.rdf">Tim Berners Lee's profile, from RDF/XML to JSON-LD</a>
         </ul>
     </div>

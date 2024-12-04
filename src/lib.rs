@@ -108,9 +108,9 @@ fn serialize(lds: &LightDataset, format: &str) -> Result<String, String> {
             .serialize_dataset(&lds)
             .map_err(|e| e.to_string())?
             .to_string(),
-        "application/canonical-n-quads" => {
+        "application/x-canonical-n-quads" => {
             let mut buffer: Vec<u8> = vec![];
-            sophia::c14n::rdfc10::normalize(&lds, &mut buffer).map_err(|e| e.to_string())?;
+            sophia::c14n::rdfc10::normalize(lds, &mut buffer).map_err(|e| e.to_string())?;
             String::from_utf8(buffer).map_err(|e| e.to_string())?
         }
         "text/turtle" => {
@@ -130,7 +130,7 @@ fn serialize(lds: &LightDataset, format: &str) -> Result<String, String> {
                 .to_string()
         }
         "application/rdf+xml" => {
-            let config = serializer::xml::RdfXmlConfig {};
+            let config = serializer::xml::RdfXmlConfig::new().with_indentation(2);
             serializer::xml::RdfXmlSerializer::new_stringifier_with_config(config)
                 .serialize_graph(&lds.graph(default))
                 .map_err(|e| e.to_string())?
@@ -154,20 +154,6 @@ trait TripleSourceExt: TripleSource + Sized {
             .is_ok()
     }
 
-    fn how_many(mut self) -> Result<usize, usize> {
-        loop {
-            let mut c = 0;
-            match self.try_for_some_triple(|_| -> Result<(), Infallible> {
-                c += 1;
-                Ok(())
-            }) {
-                Err(_) => return Err(c),
-                Ok(false) => return Ok(c),
-                Ok(true) => {}
-            }
-        }
-    }
-
     fn to_lds(self) -> Result<LightDataset, String> {
         self.to_quads().collect_quads().map_err(|e| e.to_string())
     }
@@ -178,20 +164,6 @@ trait QuadSourceExt: QuadSource + Sized {
     fn works(mut self) -> bool {
         self.try_for_each_quad(|_| Ok(()) as Result<(), Infallible>)
             .is_ok()
-    }
-
-    fn how_many(mut self) -> Result<usize, usize> {
-        loop {
-            let mut c = 0;
-            match self.try_for_some_quad(|_| -> Result<(), Infallible> {
-                c += 1;
-                Ok(())
-            }) {
-                Err(_) => return Err(c),
-                Ok(false) => return Ok(c),
-                Ok(true) => {}
-            }
-        }
     }
 
     fn to_lds(self) -> Result<LightDataset, String> {
