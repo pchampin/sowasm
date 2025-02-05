@@ -324,9 +324,7 @@ async function main() {
             options.headers.accept = "application/n-triples,application/n-quads,text/turtle,application/trig,application/ld+json,application/rdf+xml";
         }
         if (corsproxyBox.checked) {
-            url = "https://corsproxy.io/?" + encodeURIComponent(url);
-            // corsproxy.io seems to request HTML when the user-agent is a browser
-            options.headers['user-agent'] = baseUrl();
+            url = "https://corsproxy.io/?url=" + encodeURIComponent(url);
         }
         return await fetch(url, options);
     }
