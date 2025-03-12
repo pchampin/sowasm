@@ -1,5 +1,5 @@
 import soWasmInit, { convert, guess } from "./sowasm.js";
-import monacoLoader from 'https://cdn.jsdelivr.net/npm/@monaco-editor/loader@1.4.0/+esm';
+import monacoLoader from "@monaco-editor/loader";
 
 const DEFAULT_BASE = "https://example.org/dummy-base-iri/";
 

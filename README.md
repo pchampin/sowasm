@@ -10,7 +10,31 @@ wasm-pack build --target web
 
 ## Testing
 
-Run a local web server (e.g. with `python -m http.server`) and visit <http://localhost:8000/demo/>.
+First run the command above to build the wasm package.
 
+Install dependencies:
+
+```sh
+cd demo
+npm i
+```
+
+Run a local web server visit <http://localhost:8000/>.
+
+```sh
+npm run dev
+```
+
+Build for production:
+
+```sh
+npm run build
+```
+
+Test production build:
+
+```sh
+npm run preview
+```
 
 [Sophia]: https://github.com/pchampin/sophia_rs

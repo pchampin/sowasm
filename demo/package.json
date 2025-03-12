@@ -1,0 +1,32 @@
+{
+  "name": "sowasm",
+  "version": "0.1.0",
+  "description": "A RDF playground based on the Sophia library.",
+  "license": "W3C Software and Document license - 2023 version",
+  "author": {
+    "name": "Pierre-Antoine Champin"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "upgrade": "npx npm-check-updates -u && npm i"
+  },
+  "dependencies": {
+    "@monaco-editor/loader": "^1.5.0"
+  },
+  "keywords": [
+    "semantic web",
+    "RDF",
+    "Linked Data"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pchampin/sowasm.git"
+  },
+  "private": true,
+  "devDependencies": {
+    "vite": "^6.2.1"
+  }
+}
