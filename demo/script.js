@@ -1,15 +1,11 @@
+import * as monaco from 'monaco-editor';
 import soWasmInit, { convert, guess } from "./sowasm.js";
-import monacoLoader from "@monaco-editor/loader";
 
 const DEFAULT_BASE = "https://example.org/dummy-base-iri/";
 
 
 async function main() {
-
-    const [_, monaco] = await Promise.all([
-        soWasmInit(),
-        monacoLoader.init(),
-    ]);
+    await soWasmInit();
 
     const guessBox = elt('guess');
     const iformat = elt('iformat');

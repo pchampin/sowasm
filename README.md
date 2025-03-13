@@ -8,7 +8,7 @@ This started as an experiment of compiling [Sophia] into WebAssembly, and grew i
 wasm-pack build --target web
 ```
 
-## Testing
+## Running locally
 
 First run the command above to build the wasm package.
 
@@ -19,7 +19,7 @@ cd demo
 npm i
 ```
 
-Run a local web server visit <http://localhost:8000/>.
+Run a local web server on <http://localhost:8000/>.
 
 ```sh
 npm run dev
@@ -31,7 +31,7 @@ Build for production:
 npm run build
 ```
 
-Test production build:
+Deploy production build:
 
 ```sh
 npm run preview
