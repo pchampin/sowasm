@@ -22,6 +22,8 @@ console_error_panic_hook = { version = "0.1.7", optional = true }
 sophia = { version = "0.9", features = ["xml", "jsonld", "http_client"], git = "https://github.com/pchampin/sophia_rs", rev = "bfa1f377" }
 wasm-bindgen-futures = "0.4.37"
 futures-util = "0.3.28"
+serde_yaml = "0.9.34"
+serde_json = "1.0.140"
 
 [dependencies.web-sys]
 version = "0.3.4"

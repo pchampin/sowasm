@@ -12,7 +12,7 @@ use web_sys::{Request, RequestInit, RequestMode, Response};
 
 use super::*;
 
-pub fn works(source: &str) -> bool {
+pub fn guess(source: &str) -> Option<&'static str> {
     let opts = JsonLdOptions::new()
         .with_base(Iri::new_unchecked("x-string:///".into()))
         .with_document_loader_closure(|| {
@@ -22,5 +22,14 @@ pub fn works(source: &str) -> bool {
             })
         });
     let p = JsonLdParser::new_with_options(opts);
-    p.parse_str(source).works()
+    if p.parse_str(source).works() {
+        return Some("application/ld+json");
+    }
+    let mut buf = String::new();
+    if let Ok(converted) = yamlld::yaml2json(source, &mut buf) {
+        if p.parse_str(converted).works() {
+            return Some("application/ld+yaml");
+        }
+    }
+    None
 }

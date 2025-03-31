@@ -14,6 +14,7 @@ use sophia::{
 
 mod guess_jsonld;
 mod utils;
+mod yamlld;
 
 use wasm_bindgen::prelude::*;
 
@@ -41,8 +42,8 @@ pub fn guess(source: &str) -> Option<String> {
     {
         return Some("application/trig".into());
     }
-    if guess_jsonld::works(source) {
-        return Some("application/ld+json".into());
+    if let Some(format) = guess_jsonld::guess(source) {
+        return Some(format.into());
     }
     let base = Some(b);
     if (parser::xml::RdfXmlParser { base })
@@ -68,7 +69,7 @@ pub async fn convert(
 }
 
 async fn parse(
-    source: &str,
+    mut source: &str,
     format: &str,
     base: Option<String>,
     web_doc_loader: bool,
@@ -90,7 +91,11 @@ async fn parse(
             let par = parser::xml::RdfXmlParser { base };
             par.parse_str(source).to_lds()
         }
-        "application/ld+json" => {
+        "application/ld+json" | "application/ld+yaml" => {
+            let mut buf = String::new();
+            if format.ends_with("yaml") {
+                source = yamlld::yaml2json(source, &mut buf)?;
+            }
             let mut opt = JsonLdOptions::new();
             if let Some(base) = base {
                 opt = opt.with_base(base.map_unchecked(Arc::from));
@@ -165,6 +170,15 @@ fn serialize(lds: &LightDataset, format: &str) -> Result<String, String> {
                 .serialize_dataset(&lds)
                 .map_err(|e| e.to_string())?
                 .to_string()
+        }
+        "application/ld+yaml" => {
+            let json = serializer::jsonld::JsonLdSerializer::new_stringifier()
+                .serialize_dataset(&lds)
+                .map_err(|e| e.to_string())?
+                .to_string();
+            let mut yaml = String::new();
+            yamlld::json2yaml(&json, &mut yaml)?;
+            yaml
         }
         _ => Err(format!("Unrecognized format {format}"))?,
     };
