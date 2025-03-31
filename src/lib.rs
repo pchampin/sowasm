@@ -9,7 +9,7 @@ use sophia::{
     },
     inmem::dataset::LightDataset,
     iri::Iri,
-    jsonld::{loader, JsonLdOptions},
+    jsonld::{loader, loader_factory::LoaderFactory, JsonLdOptions},
 };
 
 mod guess_jsonld;
@@ -90,24 +90,33 @@ async fn parse(
             let par = parser::xml::RdfXmlParser { base };
             par.parse_str(source).to_lds()
         }
-        "application/ld+json" if web_doc_loader => {
-            let mut opt = JsonLdOptions::new().with_default_document_loader::<loader::HttpLoader>();
-            if let Some(base) = base {
-                opt = opt.with_base(base.map_unchecked(Arc::from));
-            }
-            let par = parser::jsonld::JsonLdParser::new_with_options(opt);
-            par.async_parse_str(source).await.to_lds()
-        }
-        "application/ld+json" if !web_doc_loader => {
+        "application/ld+json" => {
             let mut opt = JsonLdOptions::new();
             if let Some(base) = base {
                 opt = opt.with_base(base.map_unchecked(Arc::from));
             }
-            let par = parser::jsonld::JsonLdParser::new_with_options(opt);
-            par.async_parse_str(source).await.to_lds()
+            if web_doc_loader {
+                parse_json_like(
+                    source,
+                    format,
+                    opt.with_default_document_loader::<loader::HttpLoader>(),
+                )
+                .await
+            } else {
+                parse_json_like(source, format, opt).await
+            }
         }
         _ => Err(format!("Unrecognized format {format}"))?,
     }
+}
+
+async fn parse_json_like<LF: LoaderFactory>(
+    source: &str,
+    _format: &str,
+    opt: JsonLdOptions<LF>,
+) -> Result<LightDataset, String> {
+    let par = parser::jsonld::JsonLdParser::new_with_options(opt);
+    par.async_parse_str(source).await.to_lds()
 }
 
 fn serialize(lds: &LightDataset, format: &str) -> Result<String, String> {
