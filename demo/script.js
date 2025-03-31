@@ -112,6 +112,13 @@ async function main() {
             }
         });
 
+        // redo convert when options are modified
+        advancedOptions.addEventListener('change', async () => {
+            if (autoBox.checked) {
+                await doConvert();
+            }
+        });
+
         convertBt.addEventListener('click', doConvert);
 
         url.addEventListener('input', () => {
