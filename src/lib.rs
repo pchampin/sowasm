@@ -42,15 +42,16 @@ pub fn guess(source: &str) -> Option<String> {
     {
         return Some("application/trig".into());
     }
-    if let Some(format) = guess_jsonld::guess(source) {
-        return Some(format.into());
-    }
     let base = Some(b);
     if (parser::xml::RdfXmlParser { base })
         .parse_str(source)
         .works()
     {
         return Some("application/rdf+xml".into());
+    }
+    // must be tested in the end, because YAML is "catching" almost anything
+    if let Some(format) = guess_jsonld::guess(source) {
+        return Some(format.into());
     }
     None
 }
