@@ -16,7 +16,7 @@ Install dependencies:
 
 ```sh
 cd demo
-npm i
+npm install
 ```
 
 Run a local web server on <http://localhost:8000/>.
