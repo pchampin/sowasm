@@ -254,6 +254,13 @@ async function main() {
             ));
         }
         catch (err) {
+            if (err.includes("Remote context loading failed: cannot load") && !webDocLoaderBox.checked) {
+                if (confirm("You are trying to load a remote context. Do you want to enable the unrestricted documentLoader?")) {
+                    webDocLoaderBox.checked = true;
+                    advancedOptions.open = true;
+                    return doConvert();
+                }
+            }
             displayError(err);
         }
     }
